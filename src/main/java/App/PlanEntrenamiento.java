@@ -27,4 +27,18 @@ public class PlanEntrenamiento {
         }
         return total;
     }
+    
+    /**
+     * Calcula el total de calorías quemadas en todo el plan de entrenamiento
+     * @return Total de calorías quemadas
+     */
+    public int calcularCaloriasQuemadas() {
+        int totalCalorias = 0;
+        for (Ejercicio ejercicio : ejercicios) {
+            // Asegurarse de que las calorías estén calculadas
+            ejercicio.setIntensidad(ejercicio.getIntensidad());
+            totalCalorias += ejercicio.getCaloriasQuemadas();
+        }
+        return totalCalorias;
+    }
 }

@@ -18,18 +18,25 @@ public class FitLifeGUI extends JFrame {
     private JTextArea reporteArea;
     private DefaultListModel<String> listaComidas, listaEjercicios;
 
-    Color colorR1 = new Color(204, 255, 204);
-    Color colorR2 = new Color(204, 255, 255);
-    Color colorR3 = new Color(240, 255, 240);  //verde claro
-    Color colorR4 = new Color(204, 255, 204);
-    Color colorR5 = new Color(204, 229, 255); //color celeste
+    // UI Colors
+    private static final Color PRIMARY_COLOR = new Color(76, 175, 80);  // Material Green
+    private static final Color SECONDARY_COLOR = new Color(33, 150, 243);  // Material Blue
+    private static final Color BACKGROUND_COLOR = new Color(240, 255, 240);  // Light Green
+    private static final Color PANEL_COLOR = new Color(255, 255, 255);  // White
+    private static final Color BUTTON_COLOR = new Color(33, 150, 243);  // Material Blue
+    
+    // Colores para los niveles de intensidad
+    private static final Color colorR1 = new Color(200, 255, 200);  // Verde claro para intensidad baja
+    private static final Color colorR3 = new Color(255, 255, 150);  // Amarillo para intensidad media
+    private static final Color colorR5 = new Color(255, 180, 180);  // Rojo claro para intensidad alta
 
     private UsuarioPremium usuario;
 
     public FitLifeGUI() {
         setTitle("FitLife - App Salud");
-        setSize(600, 600);
+        setSize(800, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);  // Center on screen
 
         FondoPanel PanelFondo = new FondoPanel();
         PanelFondo.setLayout(new BorderLayout());
@@ -46,10 +53,15 @@ public class FitLifeGUI extends JFrame {
 
         PanelFondo.add(tabs, BorderLayout.CENTER);
 
-        tabs.setBackgroundAt(0, new Color(102, 255, 255)); // Usuario
-        tabs.setBackgroundAt(1, new Color(102, 255, 255)); // dieta
-        tabs.setBackgroundAt(2, new Color(102, 255, 255)); // ejercicios
-        tabs.setBackgroundAt(3, new Color(102, 255, 255)); // Reporte
+        // Apply modern styling to tabs
+        for (int i = 0; i < tabs.getTabCount(); i++) {
+            tabs.setBackgroundAt(i, SECONDARY_COLOR);
+            tabs.setForegroundAt(i, Color.WHITE);
+        }
+        
+        // Set custom tab layout
+        tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        tabs.setFont(new Font("Arial", Font.BOLD, 14));
 
         setVisible(true);
 
@@ -233,39 +245,56 @@ public class FitLifeGUI extends JFrame {
 
 //Métodos//
     private void calcularIMC() {
+        if (usuario == null) {
+            JOptionPane.showMessageDialog(this, 
+                "Primero registre un usuario", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         try {
-            String pesoStr = JOptionPane.showInputDialog(this, "Ingrese su peso en kilogramos:");
-            String estaturaStr = JOptionPane.showInputDialog(this, "Ingrese su estatura en metros:");
+            // Using the IMC calculation from UsuarioPremium
+            double imc = usuario.getIMC();
+            String estado = usuario.getEstadoSalud();
+            
+            StringBuilder mensaje = new StringBuilder()
+                .append(String.format("IMC: %.2f\n", imc))
+                .append(String.format("Estado: %s\n\n", estado));
 
-            if (pesoStr == null || estaturaStr == null) {
-                return; // Cancelado por el usuario
-            }
-            double peso = Double.parseDouble(pesoStr);
-            double estatura = Double.parseDouble(estaturaStr);
-
-            if (peso <= 0 || estatura <= 0) {
-                JOptionPane.showMessageDialog(this, "Peso y estatura deben ser valores positivos.");
-                return;
-            }
-
-            double imc = peso / (estatura * estatura);
-            String estado;
-
+            // Add recommendations based on IMC
             if (imc < 18.5) {
-                estado = "Bajo peso";
+                mensaje.append("Recomendaciones:\n")
+                       .append("- Aumentar la ingesta calórica\n")
+                       .append("- Consumir proteínas de calidad\n")
+                       .append("- Realizar ejercicios de fuerza");
             } else if (imc < 24.9) {
-                estado = "Peso normal";
+                mensaje.append("Recomendaciones:\n")
+                       .append("- Mantener hábitos saludables\n")
+                       .append("- Realizar ejercicio regular\n")
+                       .append("- Mantener una dieta balanceada");
             } else if (imc < 29.9) {
-                estado = "Sobrepeso";
+                mensaje.append("Recomendaciones:\n")
+                       .append("- Aumentar actividad física\n")
+                       .append("- Reducir carbohidratos refinados\n")
+                       .append("- Controlar porciones de comida");
             } else {
-                estado = "Obesidad";
+                mensaje.append("Recomendaciones:\n")
+                       .append("- Consultar con un profesional de la salud\n")
+                       .append("- Comenzar actividad física gradual\n")
+                       .append("- Adoptar una dieta saludable");
             }
 
-            String mensaje = String.format("Su IMC es: %.2f\nEstado: %s", imc, estado);
-            JOptionPane.showMessageDialog(this, mensaje);
+            JOptionPane.showMessageDialog(this, 
+                mensaje.toString(), 
+                "Resultados IMC", 
+                JOptionPane.INFORMATION_MESSAGE);
 
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Entrada inválida. Asegúrese de ingresar números válidos.");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, 
+                "Error al calcular IMC: " + e.getMessage(), 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -303,34 +332,51 @@ public class FitLifeGUI extends JFrame {
 
     private void agregarEjercicio() {
         if (usuario == null) {
-            JOptionPane.showMessageDialog(this, "Primero registre un usuario.");
+            JOptionPane.showMessageDialog(this, "Primero registre un usuario.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try {
-            String nombre = ejercicioField.getText();
-            int duracion = Integer.parseInt(duracionField.getText());
-            String tipo = (String) tipoEjercicioBox.getSelectedItem();
-
-            Ejercicio ejercicio;
-            switch (tipo) {
-                case "Fuerza":
-                    ejercicio = new Fuerza(nombre, duracion);  //polimorfismo en "ejercicio" al asignar objetos de diferentes subclases
-                    break;
-                case "Estiramiento":
-                    ejercicio = new Estiramiento(nombre, duracion);
-                    break;
-                default:
-                    ejercicio = new Cardio(nombre, duracion);
-                    break;
+            String nombre = ejercicioField.getText().trim();
+            if (nombre.isEmpty()) {
+                throw new IllegalArgumentException("El nombre del ejercicio no puede estar vacío");
             }
 
+            int duracion = Integer.parseInt(duracionField.getText().trim());
+            if (duracion <= 0) {
+                throw new IllegalArgumentException("La duración debe ser mayor a 0");
+            }
+
+            String tipo = (String) tipoEjercicioBox.getSelectedItem();
+            
+            // Using factory method pattern
+            Ejercicio ejercicio = Ejercicio.crearEjercicio(tipo, nombre, duracion);
+            
+            // Set random intensity between 3 and 8
+            ejercicio.setIntensidad(3 + (int)(Math.random() * 6));
+
             usuario.getPlanEntrenamiento().agregarEjercicio(ejercicio);
-            listaEjercicios.addElement(tipo + ": " + nombre + " - " + duracion + " min");
+            listaEjercicios.addElement(ejercicio.toString());
+            
+            // Clear fields and show success message
             ejercicioField.setText("");
             duracionField.setText("");
+            JOptionPane.showMessageDialog(this, 
+                String.format("Ejercicio agregado: %s\nCalorías estimadas: %d", 
+                    ejercicio.toString(), ejercicio.getCaloriasQuemadas()),
+                "Ejercicio Agregado", 
+                JOptionPane.INFORMATION_MESSAGE);
+                
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, 
+                "La duración debe ser un número válido", 
+                "Error de Formato", 
+                JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al agregar ejercicio.");
+            JOptionPane.showMessageDialog(this, 
+                "Error: " + ex.getMessage(), 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
         }
     }
 
