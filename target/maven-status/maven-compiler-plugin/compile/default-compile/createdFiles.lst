@@ -1,0 +1,11 @@
+App\Comida.class
+App\Cardio.class
+App\Ejercicio.class
+App\FitLifeGUI.class
+App\PlanEntrenamiento.class
+App\FitLifeGUI$FondoPanel.class
+App\FondoPantalla.class
+App\Fuerza.class
+App\Estiramiento.class
+App\Dieta.class
+App\UsuarioPremium.class
