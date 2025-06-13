@@ -10,6 +10,8 @@ import java.net.URL;
 import javax.swing.border.Border;
 
 public class FitLifeGUI extends JFrame {
+    private JPanel cardPanel;
+    private CardLayout cardLayout;
 
     private JTextField nombreField, edadField, pesoField, alturaField;
     private JTextField ejercicioField, duracionField;
@@ -32,69 +34,159 @@ public class FitLifeGUI extends JFrame {
 
     private UsuarioPremium usuario;
 
+    private JPanel crearPanelBienvenida() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(245, 250, 245));
+        
+        JLabel titulo = new JLabel("¡Bienvenido a FitLife!", JLabel.CENTER);
+        titulo.setFont(new Font("Segoe UI", Font.BOLD, 36));
+        titulo.setForeground(new Color(0, 100, 0));
+        titulo.setBorder(BorderFactory.createEmptyBorder(50, 0, 30, 0));
+        
+        JLabel subtitulo = new JLabel("Tu asistente personal de salud y bienestar", JLabel.CENTER);
+        subtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 20));
+        subtitulo.setForeground(new Color(70, 70, 70));
+        
+        JButton comenzarBtn = new JButton("¡Comenzar!");
+        estilizarBoton(comenzarBtn, PRIMARY_COLOR, Color.WHITE);
+        comenzarBtn.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        comenzarBtn.setPreferredSize(new Dimension(200, 60));
+        comenzarBtn.addActionListener(e -> cardLayout.show(cardPanel, "main"));
+        
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        centerPanel.setBackground(new Color(245, 250, 245));
+        
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setOpaque(false);
+        buttonPanel.add(comenzarBtn);
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.insets = new Insets(10, 0, 10, 0);
+        
+        centerPanel.add(titulo, gbc);
+        centerPanel.add(subtitulo, gbc);
+        centerPanel.add(Box.createVerticalStrut(30), gbc);
+        centerPanel.add(buttonPanel, gbc);
+        
+        panel.add(centerPanel, BorderLayout.CENTER);
+        return panel;
+    }
+    
+    private void estilizarBoton(JButton boton, Color fondo, Color texto) {
+        boton.setBackground(fondo);
+        boton.setForeground(texto);
+        boton.setFocusPainted(false);
+        boton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        boton.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+    
     public FitLifeGUI() {
-        setTitle("FitLife - App Salud");
-        setSize(800, 700);
+        setTitle("FitLife - Tu Asistente de Salud");
+        setSize(900, 750);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);  // Center on screen
-
+        setLocationRelativeTo(null);
+        
+        // Configuración del sistema de tarjetas
+        cardLayout = new CardLayout();
+        cardPanel = new JPanel(cardLayout);
+        
+        // Panel de bienvenida
+        JPanel welcomePanel = crearPanelBienvenida();
+        
+        // Panel principal de la aplicación
+        JPanel mainPanel = new JPanel(new BorderLayout());
         FondoPanel PanelFondo = new FondoPanel();
         PanelFondo.setLayout(new BorderLayout());
-
-        setContentPane(PanelFondo);
-
+        
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Datos Usuario", crearPanelUsuario());
         tabs.addTab("Dieta", crearPanelDieta());
         tabs.addTab("Ejercicios", crearPanelEjercicio());
         tabs.addTab("Reporte", crearPanelReporte());
-
-        tabs.setOpaque(false);
-
-        PanelFondo.add(tabs, BorderLayout.CENTER);
-
-        // Apply modern styling to tabs
-        for (int i = 0; i < tabs.getTabCount(); i++) {
-            tabs.setBackgroundAt(i, SECONDARY_COLOR);
-            tabs.setForegroundAt(i, Color.WHITE);
-        }
         
-        // Set custom tab layout
-        tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-        tabs.setFont(new Font("Arial", Font.BOLD, 14));
-
+        // Estilo de las pestañas
+        tabs.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tabs.setBackground(new Color(240, 240, 240));
+        tabs.setForeground(new Color(50, 50, 50));
+        
+        PanelFondo.add(tabs, BorderLayout.CENTER);
+        mainPanel.add(PanelFondo, BorderLayout.CENTER);
+        
+        // Agregar paneles al cardPanel
+        cardPanel.add(welcomePanel, "welcome");
+        cardPanel.add(mainPanel, "main");
+        
+        setContentPane(cardPanel);
         setVisible(true);
 
     }
 
     private JPanel crearPanelUsuario() {
-        JPanel panel = new JPanel(new GridLayout(6, 2));
-
-        nombreField = new JTextField();
-        edadField = new JTextField();
-        pesoField = new JTextField();
-        alturaField = new JTextField();
-
-        panel.add(new JLabel("Nombre:"));
-        panel.add(nombreField);
-        panel.add(new JLabel("Edad:"));
-        panel.add(edadField);
-        panel.add(new JLabel("Peso (kg):"));
-        panel.add(pesoField);
-        panel.add(new JLabel("Altura (m):"));
-        panel.add(alturaField);
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         panel.setBackground(colorR3);
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.weightx = 1.0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
 
+        // Configuración de campos
+        JLabel[] etiquetas = {
+            new JLabel("Nombre:"),
+            new JLabel("Edad:"),
+            new JLabel("Peso (kg):"),
+            new JLabel("Altura (m):")
+        };
+        
+        JTextField[] campos = {
+            nombreField = new JTextField(15),
+            edadField = new JTextField(15),
+            pesoField = new JTextField(15),
+            alturaField = new JTextField(15)
+        };
+        
+        // Añadir etiquetas y campos
+        for (int i = 0; i < etiquetas.length; i++) {
+            gbc.gridx = 0;
+            gbc.gridy = i;
+            etiquetas[i].setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            panel.add(etiquetas[i], gbc);
+            
+            gbc.gridx = 1;
+            campos[i].setPreferredSize(new Dimension(200, 30));
+            campos[i].setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            panel.add(campos[i], gbc);
+        }
+        
+        // Panel de botones
+        JPanel botonesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        botonesPanel.setOpaque(false);
+        
         JButton btnRegistrar = new JButton("Registrar Usuario");
         btnRegistrar.addActionListener(e -> registrarUsuario());
-        panel.add(btnRegistrar);
-
+        estilizarBoton(btnRegistrar, PRIMARY_COLOR, Color.WHITE);
+        
         JButton imcButton = new JButton("Calcular IMC");
         imcButton.addActionListener(e -> calcularIMC());
-        panel.add(imcButton); // o donde estés organizando tus botones
-
-        JButton btnConsejo = new JButton("Consejo");
-        panel.add(btnConsejo);
+        estilizarBoton(imcButton, SECONDARY_COLOR, Color.WHITE);
+        
+        JButton btnConsejo = new JButton("Consejo Saludable");
+        estilizarBoton(btnConsejo, new Color(255, 160, 0), Color.WHITE);
+        
+        botonesPanel.add(btnRegistrar);
+        botonesPanel.add(imcButton);
+        botonesPanel.add(btnConsejo);
+        
+        gbc.gridx = 0;
+        gbc.gridy = etiquetas.length;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(20, 0, 0, 0);
+        panel.add(botonesPanel, gbc);
 
         // Consejos de entrenamiento
         String[] consejos = {
@@ -140,83 +232,162 @@ public class FitLifeGUI extends JFrame {
     }
 
     private JPanel crearPanelDieta() {
-        JPanel panel = new JPanel(new BorderLayout());
-
-        JPanel entrada = new JPanel(new GridLayout(3, 2));
-        comidaField = new JTextField();
-        caloriasField = new JTextField();
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         panel.setBackground(colorR1);
-
-        entrada.add(new JLabel("Nombre de comida:"));
-        entrada.add(comidaField);
-        entrada.add(new JLabel("Calorías:"));
-        entrada.add(caloriasField);
+        
+        // Panel de entrada
+        JPanel entrada = new JPanel(new GridBagLayout());
         entrada.setBackground(colorR3);
-
+        entrada.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        
+        // Campos de texto
+        JLabel lblComida = new JLabel("Nombre de comida:");
+        comidaField = new JTextField(15);
+        JLabel lblCalorias = new JLabel("Calorías:");
+        caloriasField = new JTextField(10);
+        
+        // Establecer fuentes
+        Font fuente = new Font("Segoe UI", Font.PLAIN, 14);
+        lblComida.setFont(fuente);
+        lblCalorias.setFont(fuente);
+        comidaField.setFont(fuente);
+        caloriasField.setFont(fuente);
+        
+        // Botón de agregar
         JButton btnAgregar = new JButton("Agregar comida");
+        estilizarBoton(btnAgregar, PRIMARY_COLOR, Color.WHITE);
         btnAgregar.addActionListener(e -> agregarComida());
-        entrada.add(btnAgregar);
-        btnAgregar.setBackground(colorR5);
-
-        panel.add(entrada, BorderLayout.NORTH);
-
+        
+        // Configuración de GridBagConstraints
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
+        
+        // Añadir componentes al panel de entrada
+        gbc.gridx = 0; gbc.gridy = 0;
+        entrada.add(lblComida, gbc);
+        
+        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        entrada.add(comidaField, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.weightx = 0.0;
+        entrada.add(lblCalorias, gbc);
+        
+        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.weightx = 1.0;
+        entrada.add(caloriasField, gbc);
+        
+        gbc.gridx = 1; gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.EAST;
+        entrada.add(btnAgregar, gbc);
+        
+        // Lista de comidas
         listaComidas = new DefaultListModel<>();
         JList<String> comidasList = new JList<>(listaComidas);
-        panel.add(new JScrollPane(comidasList), BorderLayout.CENTER);
-
-        comidasList.setBackground(new Color(245, 255, 250));
-
+        comidasList.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
+        // Panel de desplazamiento
         JScrollPane scroll = new JScrollPane(comidasList);
-        scroll.getViewport().setBackground(new Color(245, 255, 250)); // Misma tonalidad
+        scroll.setBorder(BorderFactory.createTitledBorder("Lista de Comidas"));
+        scroll.getViewport().setBackground(Color.WHITE);
+        
+        // Añadir componentes al panel principal
+        panel.add(entrada, BorderLayout.NORTH);
         panel.add(scroll, BorderLayout.CENTER);
 
         return panel;
     }
 
     private JPanel crearPanelEjercicio() {
-        JPanel panel = new JPanel(new BorderLayout());
-
-        JPanel entrada = new JPanel(new GridLayout(4, 2));
-        ejercicioField = new JTextField();
-        duracionField = new JTextField();
-        tipoEjercicioBox = new JComboBox<>(new String[]{"Cardio", "Fuerza", "Estiramiento"});
-
-        entrada.add(new JLabel("Nombre de ejercicio:"));
-        entrada.add(ejercicioField);
-        entrada.add(new JLabel("Duración (min):"));
-        entrada.add(duracionField);
-        entrada.add(new JLabel("Tipo de ejercicio:"));
-        entrada.add(tipoEjercicioBox);
-
-        entrada.setBackground(colorR3);
-
-        tipoEjercicioBox.setBackground(new Color(230, 255, 240));  // Fondo verde claro
-        tipoEjercicioBox.setForeground(new Color(0, 102, 51));     // Texto verde oscuro
-        tipoEjercicioBox.setOpaque(true);
-
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         panel.setBackground(colorR1);
-
+        
+        // Panel de entrada
+        JPanel entrada = new JPanel(new GridBagLayout());
+        entrada.setBackground(colorR3);
+        entrada.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        
+        // Componentes
+        JLabel lblEjercicio = new JLabel("Nombre de ejercicio:");
+        ejercicioField = new JTextField(15);
+        JLabel lblDuracion = new JLabel("Duración (min):");
+        duracionField = new JTextField(5);
+        JLabel lblTipo = new JLabel("Tipo de ejercicio:");
+        tipoEjercicioBox = new JComboBox<>(new String[]{"Cardio", "Fuerza", "Estiramiento"});
+        
+        // Establecer fuentes
+        Font fuente = new Font("Segoe UI", Font.PLAIN, 14);
+        lblEjercicio.setFont(fuente);
+        lblDuracion.setFont(fuente);
+        lblTipo.setFont(fuente);
+        ejercicioField.setFont(fuente);
+        duracionField.setFont(fuente);
+        tipoEjercicioBox.setFont(fuente);
+        
+        // Estilo del ComboBox
+        tipoEjercicioBox.setBackground(Color.WHITE);
+        tipoEjercicioBox.setForeground(new Color(0, 100, 0));
+        tipoEjercicioBox.setFocusable(false);
+        
+        // Botón de agregar
         JButton btnAgregar = new JButton("Agregar ejercicio");
+        estilizarBoton(btnAgregar, PRIMARY_COLOR, Color.WHITE);
         btnAgregar.addActionListener(e -> agregarEjercicio());
-        entrada.add(btnAgregar);
-
-        btnAgregar.setBackground(colorR5); // Azul pastel
-        btnAgregar.setForeground(Color.BLACK);              // Texto negro
-        btnAgregar.setFocusPainted(false);                  // Quita borde al enfocar
-        btnAgregar.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        btnAgregar.setContentAreaFilled(true);
-        btnAgregar.setOpaque(true);
-
-        panel.add(entrada, BorderLayout.NORTH);
-
+        
+        // Configuración de GridBagConstraints
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        
+        // Añadir componentes al panel de entrada
+        gbc.gridx = 0; gbc.gridy = 0;
+        entrada.add(lblEjercicio, gbc);
+        
+        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        entrada.add(ejercicioField, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.weightx = 0.0;
+        entrada.add(lblDuracion, gbc);
+        
+        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.weightx = 1.0;
+        entrada.add(duracionField, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.weightx = 0.0;
+        entrada.add(lblTipo, gbc);
+        
+        gbc.gridx = 1; gbc.gridy = 2;
+        gbc.weightx = 1.0;
+        entrada.add(tipoEjercicioBox, gbc);
+        
+        gbc.gridx = 1; gbc.gridy = 3;
+        gbc.anchor = GridBagConstraints.EAST;
+        entrada.add(btnAgregar, gbc);
+        
+        // Estilo del botón de agregar
+        estilizarBoton(btnAgregar, PRIMARY_COLOR, Color.WHITE);
+        
+        // Lista de ejercicios
         listaEjercicios = new DefaultListModel<>();
         JList<String> ejerciciosList = new JList<>(listaEjercicios);
-        panel.add(new JScrollPane(ejerciciosList), BorderLayout.CENTER);
-
+        ejerciciosList.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         ejerciciosList.setBackground(new Color(245, 255, 250));
-
+        
+        // Panel de desplazamiento
         JScrollPane scroll = new JScrollPane(ejerciciosList);
-        scroll.getViewport().setBackground(new Color(245, 255, 250)); // Misma tonalidad
+        scroll.setBorder(BorderFactory.createTitledBorder("Lista de Ejercicios"));
+        scroll.getViewport().setBackground(new Color(245, 255, 250));
+        
+        // Añadir componentes al panel principal
+        panel.add(entrada, BorderLayout.NORTH);
         panel.add(scroll, BorderLayout.CENTER);
 
         return panel;
