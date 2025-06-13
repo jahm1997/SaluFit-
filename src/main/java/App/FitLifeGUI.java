@@ -84,7 +84,7 @@ public class FitLifeGUI extends JFrame {
     
     public FitLifeGUI() {
         setTitle("FitLife - Tu Asistente de Salud");
-        setSize(900, 750);
+        setSize(600, 450);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
@@ -415,12 +415,91 @@ public class FitLifeGUI extends JFrame {
     }
 
 //Métodos//
+    private void registrarUsuario() {
+        try {
+            // Validar campos vacíos
+            if (nombreField.getText().trim().isEmpty() || 
+                edadField.getText().trim().isEmpty() || 
+                pesoField.getText().trim().isEmpty() || 
+                alturaField.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, 
+                    "Por favor complete todos los campos.", 
+                    "Campos Incompletos", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Validar formato numérico
+            int edad;
+            double peso, altura;
+            
+            try {
+                edad = Integer.parseInt(edadField.getText().trim());
+                peso = Double.parseDouble(pesoField.getText().trim());
+                altura = Double.parseDouble(alturaField.getText().trim());
+                
+                // Validar valores positivos
+                if (edad <= 0 || peso <= 0 || altura <= 0) {
+                    throw new NumberFormatException();
+                }
+                
+                // Validar altura razonable (en metros)
+                if (altura < 0.5 || altura > 2.5) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Por favor ingrese una altura válida (entre 0.5 y 2.5 metros).", 
+                        "Altura Inválida", 
+                        JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, 
+                    "Por favor ingrese valores numéricos válidos y positivos.", 
+                    "Datos Inválidos", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Confirmación antes de registrar
+            int confirmacion = JOptionPane.showConfirmDialog(
+                this, 
+                "¿Está seguro de registrar estos datos?\n" +
+                "Nombre: " + nombreField.getText() + "\n" +
+                "Edad: " + edad + " años\n" +
+                "Peso: " + peso + " kg\n" +
+                "Altura: " + altura + " m",
+                "Confirmar Registro",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+                
+            if (confirmacion == JOptionPane.YES_OPTION) {
+                usuario = new UsuarioPremium(nombreField.getText().trim(), edad, peso, altura);
+                JOptionPane.showMessageDialog(this, 
+                    "¡Usuario registrado exitosamente!", 
+                    "Registro Exitoso", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                
+                // Limpiar campos después de registro exitoso
+                nombreField.setText("");
+                edadField.setText("");
+                pesoField.setText("");
+                alturaField.setText("");
+            }
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, 
+                "Ocurrió un error inesperado: " + e.getMessage(), 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
     private void calcularIMC() {
         if (usuario == null) {
             JOptionPane.showMessageDialog(this, 
-                "Primero registre un usuario", 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Primero debe registrar un usuario.",
+                "Usuario no registrado",
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -455,7 +534,7 @@ public class FitLifeGUI extends JFrame {
                        .append("- Comenzar actividad física gradual\n")
                        .append("- Adoptar una dieta saludable");
             }
-
+            
             JOptionPane.showMessageDialog(this, 
                 mensaje.toString(), 
                 "Resultados IMC", 
@@ -468,84 +547,157 @@ public class FitLifeGUI extends JFrame {
                 JOptionPane.ERROR_MESSAGE);
         }
     }
-
-    private void registrarUsuario() {
-        try {
-            String nombre = nombreField.getText();
-            int edad = Integer.parseInt(edadField.getText());
-            double peso = Double.parseDouble(pesoField.getText());
-            double altura = Double.parseDouble(alturaField.getText());
-
-            usuario = new UsuarioPremium(nombre, edad, peso, altura);
-            JOptionPane.showMessageDialog(this, "Usuario registrado con éxito.");
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error en los datos del usuario.");
-        }
-    }
-
+    
     private void agregarComida() {
         if (usuario == null) {
-            JOptionPane.showMessageDialog(this, "Primero registre un usuario.");
+            JOptionPane.showMessageDialog(this, 
+                "Primero debe registrar un usuario.",
+                "Usuario no registrado",
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         try {
-            String nombre = comidaField.getText();
-            int calorias = Integer.parseInt(caloriasField.getText());
-            usuario.getDieta().agregarComida(new Comida(nombre, calorias));
-            listaComidas.addElement(nombre + " - " + calorias + " cal");
-            comidaField.setText("");
-            caloriasField.setText("");
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al agregar comida.");
+            // Validar campos vacíos
+            if (comidaField.getText().trim().isEmpty() || caloriasField.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, 
+                    "Por favor complete todos los campos de la comida.", 
+                    "Campos Incompletos", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Validar formato de calorías
+            int calorias;
+            try {
+                calorias = Integer.parseInt(caloriasField.getText().trim());
+                if (calorias <= 0) {
+                    throw new NumberFormatException();
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, 
+                    "Por favor ingrese un número válido de calorías (mayor a 0).", 
+                    "Calorías Inválidas", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String nombre = comidaField.getText().trim();
+            
+            // Confirmar antes de agregar
+            int confirmacion = JOptionPane.showConfirmDialog(
+                this, 
+                String.format("¿Agregar esta comida?\n\n" +
+                            "Nombre: %s\n" +
+                            "Calorías: %d", nombre, calorias),
+                "Confirmar Comida",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+                
+            if (confirmacion == JOptionPane.YES_OPTION) {
+                usuario.getDieta().agregarComida(new Comida(nombre, calorias));
+                listaComidas.addElement(nombre + " - " + calorias + " cal");
+                
+                // Limpiar campos
+                comidaField.setText("");
+                caloriasField.setText("");
+                
+                JOptionPane.showMessageDialog(this, 
+                    "¡Comida agregada exitosamente!", 
+                    "Éxito", 
+                    JOptionPane.INFORMATION_MESSAGE);
+            }
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, 
+                "Error al agregar comida: " + e.getMessage(), 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void agregarEjercicio() {
         if (usuario == null) {
-            JOptionPane.showMessageDialog(this, "Primero registre un usuario.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, 
+                "Primero debe registrar un usuario.",
+                "Usuario no registrado",
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         try {
-            String nombre = ejercicioField.getText().trim();
-            if (nombre.isEmpty()) {
-                throw new IllegalArgumentException("El nombre del ejercicio no puede estar vacío");
+            // Validar campos vacíos
+            if (ejercicioField.getText().trim().isEmpty() || duracionField.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, 
+                    "Por favor complete todos los campos del ejercicio.", 
+                    "Campos Incompletos", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
             }
 
-            int duracion = Integer.parseInt(duracionField.getText().trim());
-            if (duracion <= 0) {
-                throw new IllegalArgumentException("La duración debe ser mayor a 0");
+            String nombre = ejercicioField.getText().trim();
+            
+            // Validar duración
+            int duracion;
+            try {
+                duracion = Integer.parseInt(duracionField.getText().trim());
+                if (duracion <= 0) {
+                    throw new NumberFormatException();
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, 
+                    "Por favor ingrese una duración válida (mayor a 0 minutos).", 
+                    "Duración Inválida", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
             }
 
             String tipo = (String) tipoEjercicioBox.getSelectedItem();
             
-            // Using factory method pattern
+            // Crear ejercicio usando el patrón Factory
             Ejercicio ejercicio = Ejercicio.crearEjercicio(tipo, nombre, duracion);
             
-            // Set random intensity between 3 and 8
-            ejercicio.setIntensidad(3 + (int)(Math.random() * 6));
-
-            usuario.getPlanEntrenamiento().agregarEjercicio(ejercicio);
-            listaEjercicios.addElement(ejercicio.toString());
+            // Establecer intensidad aleatoria entre 3 y 8
+            int intensidad = 3 + (int)(Math.random() * 6);
+            ejercicio.setIntensidad(intensidad);
             
-            // Clear fields and show success message
-            ejercicioField.setText("");
-            duracionField.setText("");
-            JOptionPane.showMessageDialog(this, 
-                String.format("Ejercicio agregado: %s\nCalorías estimadas: %d", 
-                    ejercicio.toString(), ejercicio.getCaloriasQuemadas()),
-                "Ejercicio Agregado", 
-                JOptionPane.INFORMATION_MESSAGE);
+            // Calcular calorías estimadas
+            int caloriasQuemadas = ejercicio.getCaloriasQuemadas();
+            
+            // Confirmar antes de agregar
+            int confirmacion = JOptionPane.showConfirmDialog(
+                this, 
+                String.format("¿Agregar este ejercicio?\n\n" +
+                            "Tipo: %s\n" +
+                            "Nombre: %s\n" +
+                            "Duración: %d minutos\n" +
+                            "Intensidad: %d/10\n" +
+                            "Calorías estimadas: %d", 
+                            tipo, nombre, duracion, intensidad, caloriasQuemadas),
+                "Confirmar Ejercicio",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
                 
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, 
-                "La duración debe ser un número válido", 
-                "Error de Formato", 
-                JOptionPane.ERROR_MESSAGE);
+            if (confirmacion == JOptionPane.YES_OPTION) {
+                usuario.getPlanEntrenamiento().agregarEjercicio(ejercicio);
+                listaEjercicios.addElement(ejercicio.toString());
+                
+                // Limpiar campos
+                ejercicioField.setText("");
+                duracionField.setText("");
+                
+                JOptionPane.showMessageDialog(this, 
+                    String.format("¡Ejercicio agregado exitosamente!\n\n" +
+                                "%s\n" +
+                                "Calorías estimadas: %d", 
+                                ejercicio.toString(), caloriasQuemadas),
+                    "Ejercicio Agregado", 
+                    JOptionPane.INFORMATION_MESSAGE);
+            }
+            
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, 
-                "Error: " + ex.getMessage(), 
+                "Error al agregar ejercicio: " + ex.getMessage(), 
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
         }
